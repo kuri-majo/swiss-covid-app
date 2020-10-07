@@ -20,8 +20,8 @@ __version__ = "0.0.3"
 
 import numpy as np
 import pandas as pd
-import datetime
-import matplotlib.pyplot as plt
+#import datetime
+#import matplotlib.pyplot as plt
 import streamlit as st
 import plotly.graph_objects as go
 
@@ -35,7 +35,17 @@ df = load_data()
 #print(df)
 # df = pd.read_csv('D:\Programming\swiss-covid-app\COVID19_Fallzahlen_CH_total.csv')
 
-st.markdown("### Covid-19 Dashboard for Switzerland")
+st.title("Covid-19 Dashboard for Switzerland")
+st.markdown("This is a dashboard made for exploring how the Swiss cantons "
+            "differ in Covid-19 caseload. It has been programmed by " 
+            "[Ira Kurthen](https://datamahou.ch/cv/) " 
+            "and it uses open data provided by " 
+            "[Statistisches Amt Kanton Zürich](https://github.com/openZH/covid_19).")
+st.markdown("The code for this dashboard can be found on my [GitHub](https://github.com/kuri-majo/swiss-covid-app). "
+            "The dashboard was programmed using [Streamlit](https://www.streamlit.io/) "
+            "and is hosted on an SSL-secured [DigitalOcean](https://www.digitalocean.com/) droplet "
+            "served by [nginx](https://www.nginx.com/).")
+st.markdown('To get started...')
 
 # inhabitants per canton
 @st.cache
@@ -56,11 +66,6 @@ df = pd.merge(df, inhabitants_cantons, left_on = "abbreviation_canton_and_fl", r
          how = "left")
 
 df["cases_per_1000_inhabitants"] = np.divide(df["ncumul_conf"], df["Inhabitants_1000"])
-
-show_raw_data = st.checkbox('Show raw data', value = False)
-
-if show_raw_data: 
-    st.write(df)
 
 # canton abbreviations are used in the dataset, so we need to know these abbreviations
 canton_dict = {
@@ -91,6 +96,9 @@ canton_dict = {
 	"Geneva": "GE", 
 	"Jura": "JU"}
 
+# heading canton selection
+st.header("Select the cantons you wish to compare.")
+
 # multiselect option to select sorted cantons
 cantons = st.multiselect("Which canton(s) are you interested in?", sorted(list(canton_dict.keys())))
 
@@ -103,94 +111,11 @@ selected_cantons_df = df.loc[df['abbreviation_canton_and_fl'].isin(selected_cant
 # show for debugging purposes
 #st.write(selected_cantons_df)
 
-# create datetime series from first date to last date
-# not necessary
-# date_beginning = sorted(df["date"])
-# date_beginning = date_beginning[0]
-# date_end = sorted(df["date"])
-# date_end = date_end[-1]
-# full_time_range =  pd.date_range(start=date_beginning, end=date_end, freq="D")
+# add possibility of switching to log y axis
 
-if 0: #matplotlib two plots version
-    # plotting the line of cumulated cases for each selected canton 
-    plt.figure(0)
-    for num_cantons, cant in enumerate(selected_cantons): 
-        # add missing dates
-        #selected_cantons_df.merge(full_time_range.rename('full_date'), how = "right", left_on="date")
-        plt.plot(selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].date, 
-                  #selected_cantons_df.ncumul_tested, 
-                  selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].ncumul_conf, 
-                  label = cant)
-    
-    if selected_cantons: 
-        plt.axvline(x = pd.to_datetime("Mar 16, 2020"), ymin = 0, ymax = 1, label='Beginning of lockdown', 
-                    linestyle = "dotted")
-        plt.axvline(x = pd.to_datetime("Mar 16, 2020") + datetime.timedelta(days=14), ymin = 0, 
-                    ymax = 1, label='Two weeks after lockdown', linestyle = "dotted")
-    
-    # set x axis label
-    plt.xlabel('Date')
-    # set y axis label of the current axis
-    plt.ylabel('Confirmed cases (cumulative)')
-    # set a title for the plot
-    plt.title('Number of confirmed cases (cumulative)')
-    # show a legend on the plot
-    plt.legend()
-    # display the figure
-    st.pyplot()
-    
-    # plotting the line of cumulated cases per 1000 inhabitants for each selected canton
-    plt.figure(1) 
-    for num_cantons, cant in enumerate(selected_cantons): 
-        # add missing dates
-        #selected_cantons_df.merge(full_time_range.rename('full_date'), how = "right", left_on="date")
-        plt.plot(selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].date, 
-                  #selected_cantons_df.ncumul_tested, 
-                  selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].cases_per_1000_inhabitants, 
-                  label = cant)
-    # set x axis label
-    plt.xlabel('Date')
-    # set y axis label of the current axis
-    plt.ylabel('Confirmed cases per 1000 inhabitants (cumulative)')
-    # set a title for the plot
-    plt.title('Number of confirmed cases per 1000 inhabitants (cumulative)')
-    # show a legend on the plot
-    plt.legend()
-    # display the figure
-    st.pyplot()
-
-if 0: # matplotlib subplot version
-    # subplot version
-    fig, axs = plt.subplots(2, sharex = True)
-    fig.suptitle('Cumulative Covid Cases')
-    
-    for num_cantons, cant in enumerate(selected_cantons): 
-        # add missing dates
-        #selected_cantons_df.merge(full_time_range.rename('full_date'), how = "right", left_on="date")
-        axs[0].plot(selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].date, 
-                  #selected_cantons_df.ncumul_tested, 
-                  selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].ncumul_conf, 
-                  label = cant)
-    
-    axs[0].set_title("Total")
-    
-    for num_cantons, cant in enumerate(selected_cantons): 
-        # add missing dates
-        #selected_cantons_df.merge(full_time_range.rename('full_date'), how = "right", left_on="date")
-        axs[1].plot(selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].date, 
-                  #selected_cantons_df.ncumul_tested, 
-                  selected_cantons_df[selected_cantons_df['abbreviation_canton_and_fl'] == cant].cases_per_1000_inhabitants, 
-                  label = cant)
-    
-    axs[1].set_title("Per 1000 inhabitants")
-    axs[1].set_xlabel("Date")
-    # legend
-    handles, labels = axs[1].get_legend_handles_labels()
-    fig.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc='upper left')
-    # increases whitespace between subplots
-    fig.tight_layout(pad=3.0)
-    # display the figure
-    st.pyplot(fig)
+log_y_axis = st.selectbox(
+    'Y-axis: linear or logarithmic?',
+     ['linear', 'logarithmic'])
 
 # to do: make function out of this
 if 1: # plotly version
@@ -207,9 +132,13 @@ if 1: # plotly version
                       title="Number of confirmed cases (cumulative)",
                       xaxis_title="Date",
                       yaxis_title="Confirmed Cases",
-                      legend_title="Canton",
+                      legend_title="Canton", 
+                      xaxis_fixedrange = True, # disable zooming/panning, useful for mobile screens
+                      yaxis_fixedrange = True, # disable zooming/panning, useful for mobile screens
                       showlegend = True) # always show legend, even if only one canton is selected
-    st.write(fig_total_cases)
+    if log_y_axis == 'logarithmic':
+        fig_total_cases.update_yaxes(type="log")
+    st.plotly_chart(fig_total_cases, use_container_width = True) # use container width allows for mobile screens
     
     fig_per_number = go.Figure()
     for num_cantons, cant in enumerate(selected_cantons): 
@@ -223,6 +152,16 @@ if 1: # plotly version
                       title="Number of confirmed cases per 1000 inhabitants (cumulative)",
                       xaxis_title="Date",
                       yaxis_title="Confirmed cases per 1000 inhabitants (cumulative)",
-                      legend_title="Canton",
+                      legend_title="Canton", 
+                      xaxis_fixedrange = True, # disable zooming/panning, useful for mobile screens
+                      yaxis_fixedrange = True, # disable zooming/panning, useful for mobile screens
                       showlegend = True) # always show legend, even if only one canton is selected
-    st.write(fig_per_number)
+    if log_y_axis == 'logarithmic':
+        fig_per_number.update_yaxes(type="log")
+    st.plotly_chart(fig_per_number, use_container_width = True) # use container width allows for mobile screens
+
+# show raw data if asked
+show_raw_data = st.checkbox('Show raw data', value = False)
+
+if show_raw_data: 
+    st.write(df)
