@@ -5,3 +5,4 @@ seaborn==0.10.1
 streamlit==0.66.0
 xlrd==1.2.0
 plotly==4.11.0
+geopandas==0.6.1
