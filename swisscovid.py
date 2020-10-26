@@ -107,7 +107,7 @@ df = pd.merge(df, inhabitants_cantons, left_on = "abbreviation_canton_and_fl", r
 
 df["cases_per_1000_inhabitants"] = np.divide(df["ncumul_conf"], df["Inhabitants_1000"])
 
-map_cantons = gpd.read_file("D:\Programming\swiss-covid-app\CHE_adm\CHE_adm1.shp", 
+map_cantons = gpd.read_file("CHE_adm/CHE_adm1.shp", 
                             encoding = 'utf-8')
 
 #canton_and_ncumul_only = df[["canton_full_name", "ncumul_conf"]]
