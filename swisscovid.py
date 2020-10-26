@@ -27,7 +27,10 @@ import plotly.graph_objects as go
 import geopandas as gpd
 import json
 #import fiona
-#import os.path
+import os
+
+# set working directory to file location
+os.chdir(os.path.dirname(__file__))
 
 # canton abbreviations are used in the dataset, so we need to know these abbreviations
 canton_dict = {
@@ -83,7 +86,7 @@ if 1:
                 "The dashboard was programmed using [Streamlit](https://www.streamlit.io/) "
                 "and is hosted on an SSL-secured [DigitalOcean](https://www.digitalocean.com/) droplet "
                 "served by [nginx](https://www.nginx.com/).")
-    st.markdown('To get started...')
+    #st.markdown('To get started...')
 
 # inhabitants per canton
 @st.cache
@@ -96,7 +99,6 @@ def load_data_cantons():
     #df = df.div(1000) # first in 1000, now in 100000
     df.columns = ['Inhabitants_1000']
     return df
-
 inhabitants_cantons = load_data_cantons()
 
 # join inhabitant number info with covid data
@@ -112,38 +114,42 @@ map_cantons = gpd.read_file("D:\Programming\swiss-covid-app\CHE_adm\CHE_adm1.shp
 
 #map_with_covid = map_cantons.merge(canton_and_ncumul_only, how = "left", left_on = "NAME_1", right_on = "canton_full_name")
 
-today = datetime.date.today()
-today2 = pd.to_datetime(today)
-today3 = str(today2)
-st.write("Today's date:", today2)
- # - datetime.timedelta(days=1),
+if 0: # will become important later
+    today = datetime.date.today()
+    today2 = pd.to_datetime(today)
+    today3 = str(today2)
+    st.write("Today's date:", today2)
+     # - datetime.timedelta(days=1),
 
 # read shapefile and convert to geojson, necessary for plotly choropleth maps
 map_cantons.to_file("CHE_adm1.geojson", driver = "GeoJSON")
 with open("CHE_adm1.geojson") as geofile:
         cantons_jsonfile = json.load(geofile)
 
+# some naming problems, need to adjust manually
+cantons_jsonfile["features"][11]["properties"]["NAME_1"] = "Luzern"
+cantons_jsonfile["features"][15]["properties"]["NAME_1"] = "St. Gallen"
+
+# initialize choropleth map
 fig = go.Figure(data = go.Choroplethmapbox(
     geojson = cantons_jsonfile, 
     z = df["ncumul_conf"], 
     #z = df.loc[df['date'] == today3, ['ncumul_conf']], 
     locations = df["canton_full_name"], 
-    featureidkey='properties.NAME_1',
+    featureidkey='properties.NAME_1', 
+    colorscale = "viridis"
     #featureidkey="properties.district",
     #center = {"lat": 46.94809, "lon": 7.44744} 
     ))
 
-fig.update_layout(title_text = 'Cases per Canton',
+fig.update_layout(title_text = 'Confirmed Cases per Canton',
                   title_x=0.5,
-                  coloraxis_colorscale='algae_r',
-                  mapbox=dict(style='carto-positron',
+                  mapbox=dict(style='white-bg',
                               zoom=6, 
                               center = {"lat": 46.8181877 , "lon":8.2275124 },
                               )); 
 
 st.write(fig)
-
-#cantons_jsonfile["features"][0]
 
 # heading canton selection
 st.header("Select the cantons you wish to compare.")
