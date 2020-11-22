@@ -13,21 +13,23 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = "Ira Kurthen"
 __contact__ = "ira.kurthen[at]gmail.com"
-__date__ = "2020/10/21"
+__date__ = "2020/11/22"
 __deprecated__ = False
 __license__ = "GPLv3"
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 
 import numpy as np
 import pandas as pd
 import datetime
-#import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt  # was 3.3.1
 import streamlit as st
 import plotly.graph_objects as go
 import geopandas as gpd
 import json
 #import fiona
 import os
+#import st_rerun
+import time
 
 # set working directory to file location
 os.chdir(os.path.dirname(__file__))
@@ -58,7 +60,7 @@ canton_dict = {
 	"Vaud": "VD",
 	"Valais": "VS",
 	"Neuchâtel": "NE", 
-	"Geneva": "GE", 
+	"Genève": "GE", 
 	"Jura": "JU"}
 # also add a reversed version of the dictionary
 rev_canton_dict = {value : key for (key, value) in canton_dict.items()}
@@ -114,13 +116,6 @@ map_cantons = gpd.read_file("CHE_adm/CHE_adm1.shp",
 
 #map_with_covid = map_cantons.merge(canton_and_ncumul_only, how = "left", left_on = "NAME_1", right_on = "canton_full_name")
 
-if 0: # will become important later
-    today = datetime.date.today()
-    today2 = pd.to_datetime(today)
-    today3 = str(today2)
-    st.write("Today's date:", today2)
-     # - datetime.timedelta(days=1),
-
 # read shapefile and convert to geojson, necessary for plotly choropleth maps
 map_cantons.to_file("CHE_adm1.geojson", driver = "GeoJSON")
 with open("CHE_adm1.geojson") as geofile:
@@ -137,19 +132,22 @@ fig = go.Figure(data = go.Choroplethmapbox(
     #z = df.loc[df['date'] == today3, ['ncumul_conf']], 
     locations = df["canton_full_name"], 
     featureidkey='properties.NAME_1', 
-    colorscale = "viridis"
+    colorscale = "viridis", 
+    colorbar_title = "No. Cases"
     #featureidkey="properties.district",
     #center = {"lat": 46.94809, "lon": 7.44744} 
     ))
 
 fig.update_layout(title_text = 'Confirmed Cases per Canton',
                   title_x=0.5,
+                  xaxis_fixedrange = True, # disable zooming/panning, useful for mobile screens
+                  yaxis_fixedrange = True, # disable zooming/panning, useful for mobile screens
                   mapbox=dict(style='white-bg',
                               zoom=6, 
                               center = {"lat": 46.8181877 , "lon":8.2275124 },
                               )); 
 
-st.write(fig)
+st.plotly_chart(fig, use_container_width = True)
 
 # heading canton selection
 st.header("Select the cantons you wish to compare.")
@@ -219,3 +217,20 @@ show_raw_data = st.checkbox('Show raw data', value = False)
 
 if show_raw_data: 
     st.write(df)
+
+# show last update date
+today = datetime.date.today()
+st.write("Last updated:", today)
+# - datetime.timedelta(days=1),
+
+
+# to be added in the future (possibly)
+#time.sleep(60*60*12)  # 12 hours timer
+#st_rerun()
+    
+    
+    
+    
+    
+    
+    
