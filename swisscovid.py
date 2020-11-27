@@ -24,9 +24,7 @@ import datetime
 #import matplotlib.pyplot as plt  # was 3.3.1
 import streamlit as st
 import plotly.graph_objects as go
-import geopandas as gpd
 import json
-#import fiona
 import os
 #import st_rerun
 import time
@@ -109,15 +107,10 @@ df = pd.merge(df, inhabitants_cantons, left_on = "abbreviation_canton_and_fl", r
 
 df["cases_per_1000_inhabitants"] = np.divide(df["ncumul_conf"], df["Inhabitants_1000"])
 
-map_cantons = gpd.read_file("CHE_adm/CHE_adm1.shp", 
-                            encoding = 'utf-8')
 
 #canton_and_ncumul_only = df[["canton_full_name", "ncumul_conf"]]
 
-#map_with_covid = map_cantons.merge(canton_and_ncumul_only, how = "left", left_on = "NAME_1", right_on = "canton_full_name")
-
-# read shapefile and convert to geojson, necessary for plotly choropleth maps
-map_cantons.to_file("CHE_adm1.geojson", driver = "GeoJSON")
+# read from geojson, necessary for plotly choropleth maps
 with open("CHE_adm1.geojson") as geofile:
         cantons_jsonfile = json.load(geofile)
 

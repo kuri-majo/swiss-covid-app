@@ -20,8 +20,7 @@ WORKDIR /swisscovidapp
 # copy over requirements
 COPY requirements.txt ./requirements.txt
 
-# install pip then Cython then packages
-RUN pip3 install --no-cache-dir Cython
+# install pip then packages
 RUN pip3 install -r requirements.txt
 
 # copying all files over
