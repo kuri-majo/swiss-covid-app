@@ -111,8 +111,8 @@ df["cases_per_1000_inhabitants"] = np.divide(df["ncumul_conf"], df["Inhabitants_
 #canton_and_ncumul_only = df[["canton_full_name", "ncumul_conf"]]
 
 # read from geojson, necessary for plotly choropleth maps
-with open("CHE_adm1.geojson") as geofile:
-        cantons_jsonfile = json.load(geofile)
+with open("CHE_adm1.geojson", encoding="latin1") as geofile:
+    cantons_jsonfile = json.load(geofile)
 
 # some naming problems, need to adjust manually
 cantons_jsonfile["features"][11]["properties"]["NAME_1"] = "Luzern"
