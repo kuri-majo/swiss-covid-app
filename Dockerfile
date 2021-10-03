@@ -1,46 +1,23 @@
-# A dockerfile must always start by importing the base image.
-# We use the keyword 'FROM' to do that.
-# In our example, we want import the python image.
-# So we write 'python' for the image name and 'latest' for the version.
-#FROM python:latest
-# but instead we use this because we specifically want python 3.8 and not the latest version
-FROM ubuntu:18.04
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM python:3.8-slim-buster
 
-# ubuntu installing - python, pip
-RUN apt-get update &&\
-    apt-get install python3.8 -y &&\
-	apt-get install python3-pip -y
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# exposing default port for streamlit
-EXPOSE 8501
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
 
-# making directory of app
-WORKDIR /swisscovidapp
+# Install pip requirements
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
 
-# copy over requirements
-COPY requirements.txt ./requirements.txt
+WORKDIR /app
+COPY . /app
 
-# install pip then packages
-RUN pip3 install -r requirements.txt
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
 
-# copying all files over
-# It is typically not recommended to copy all files to the image (particularly if you have large files). 
-# However, since this is a small example, it won't cause any issues for us.
-COPY . .
-
-# cmd to launch app when container is run
-CMD streamlit run swisscovid.py
-
-# streamlit-specific commands for config
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-RUN mkdir -p /root/.streamlit
-RUN bash -c 'echo -e "\
-[general]\n\
-email = \"\"\n\
-" > /root/.streamlit/credentials.toml'
-
-RUN bash -c 'echo -e "\
-[server]\n\
-enableCORS = false\n\
-" > /root/.streamlit/config.toml'
+# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+CMD ["python", "swisscovid.py"]
