@@ -45,6 +45,15 @@ CMD streamlit run swisscovid.py
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN mkdir -p /root/.streamlit
+
+# errors here
+ => ERROR [ 8/10] RUN mkdir -p /root/.streamlit                                                                                                                                                                  0.5s
+------
+ > [ 8/10] RUN mkdir -p /root/.streamlit:
+#12 0.501 mkdir: cannot create directory ‘/root’: Permission denied
+------
+executor failed running [/bin/sh -c mkdir -p /root/.streamlit]: exit code: 1
+
 RUN bash -c 'echo -e "\
 [general]\n\
 email = \"\"\n\
