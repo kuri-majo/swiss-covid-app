@@ -1,2 +1,5 @@
 __pycache__
 .spyproject
+.vscode
+.venv
+.python-version
