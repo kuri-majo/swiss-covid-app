@@ -22,13 +22,13 @@ EXPOSE 8501
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Copy only requirements to cache them in docker layer
-WORKDIR /code
-COPY poetry.lock pyproject.toml /code/
+WORKDIR /app
+COPY poetry.lock pyproject.toml /app/
 
-# Creates a non-root user with an explicit UID and adds permission to access the /code folder
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /code
-USER appuser
+# RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+# USER appuser
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
@@ -36,7 +36,7 @@ RUN poetry config virtualenvs.create false \
 
 
 # Creating folders, and files for a project:
-COPY . /code
+COPY . /app
 
 # cmd to launch app when container is run
 CMD streamlit run swisscovid.py
@@ -46,13 +46,16 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN mkdir -p /root/.streamlit
 
-# errors here
- => ERROR [ 8/10] RUN mkdir -p /root/.streamlit                                                                                                                                                                  0.5s
-------
- > [ 8/10] RUN mkdir -p /root/.streamlit:
+# TODO
+# errors here because of user
+# add user in a future release
+
+# => ERROR [ 8/10] RUN mkdir -p /root/.streamlit                                                                                                                                                                  0.5s
+#------
+# > [ 8/10] RUN mkdir -p /root/.streamlit:
 #12 0.501 mkdir: cannot create directory ‘/root’: Permission denied
-------
-executor failed running [/bin/sh -c mkdir -p /root/.streamlit]: exit code: 1
+#------
+#executor failed running [/bin/sh -c mkdir -p /root/.streamlit]: exit code: 1
 
 RUN bash -c 'echo -e "\
 [general]\n\
